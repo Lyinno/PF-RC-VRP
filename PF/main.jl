@@ -23,9 +23,11 @@ function get_integer_solution(x, rotas)
 end
 
 
-function main(path, max_t, t_descarga, n_routes)
+function main(i, j, max_t, t_descarga, n_routes)
+    path = "DatAnonymous\\Teste_$(i)_num$(j).txt"
+    timeWindowPath = "DatAnonymous\\janelas_$(i)_$(j)lojas.txt"
     allLB = []
-    A, Ast, Custos, rotas, vehiclesByStore, tempo, fretes, df_demanda, df_capacidade = makeRoutes(path, max_t, t_descarga, n_routes)
+    A, Ast, Custos, rotas, vehiclesByStore, tempo, fretes, df_demanda, df_capacidade, timeWindow = makeRoutes(path, timeWindowPath, max_t, t_descarga, n_routes)
 
     demandaPeso = Dict(row.store => row.demanda_peso for row in eachrow(df_demanda))
     demandaVolume = Dict(row.store => row.demanda_volume for row in eachrow(df_demanda))
@@ -77,7 +79,7 @@ function main(path, max_t, t_descarga, n_routes)
             println("LB*: $LPAtual | UB: $melhorUB | Gap*: $(round(gapAtual, digits=4))%")
         end
 
-        resultados = solve_all_pricings(V, π, α, vehiclesByStore, tempo, fretes, demandaPeso, demandaVolume, capPeso, capVolume, max_t, t_descarga, rotas)
+        resultados = solve_all_pricings(V, π, α, vehiclesByStore, tempo, fretes, demandaPeso, demandaVolume, capPeso, capVolume, max_t, t_descarga, rotas, timeWindow)
 
         tolRC = 1e-6
         resultadosNegativos = [resultado for resultado in resultados if resultado !== nothing && resultado.reduced_cost < -tolRC]
@@ -155,4 +157,4 @@ function main(path, max_t, t_descarga, n_routes)
 end
 
 
-main("DatAnonymous\\Teste_50_num1.txt", 8, 1, 500)
+main(100, 1, 8, 1, 500)

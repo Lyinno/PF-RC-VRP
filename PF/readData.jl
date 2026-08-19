@@ -51,3 +51,27 @@ function readData(path)
     end
     return allDfs
 end
+
+function ler_janelas_recebimento(nome_arquivo::String)
+
+    janelas = Dict{Int, Vector{Float64}}()
+
+    open(nome_arquivo, "r") do arquivo
+
+        readline(arquivo)
+        readline(arquivo)
+
+        for linha in eachline(arquivo)
+            isempty(strip(linha)) && continue
+
+            dados = split(linha)
+
+            loja = parse(Int, dados[1])
+            inicio = parse(Float64, dados[2])
+            fim = parse(Float64, dados[3])
+
+            janelas[loja] = [inicio, fim]
+        end
+    end
+    return janelas
+end
