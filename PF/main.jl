@@ -23,7 +23,27 @@ function get_integer_solution(x, rotas)
 end
 
 
+function all_pricings_complete(V, stateDir)
+    for v in V
+        metaPath = joinpath(pricing_vehicle_dir(stateDir,v), "meta.txt")
+
+        if !isfile(metaPath)
+            return false
+        end
+
+        meta = read_pricing_meta(metaPath)
+
+        if !haskey(meta, "complete") || !parse(Bool, meta["complete"])
+            return false
+        end
+    end
+
+    return true
+end
+
+
 function main(i, j, max_t, t_descarga, n_routes)
+    pasta_veic = "C:\\PF_cases\\caso_$(i)_$(j)"
     path = "DatAnonymous\\Teste_$(i)_num$(j).txt"
     timeWindowPath = "DatAnonymous\\janelas_$(i)_$(j)lojas.txt"
     allLB = []
@@ -79,12 +99,20 @@ function main(i, j, max_t, t_descarga, n_routes)
             println("LB*: $LPAtual | UB: $melhorUB | Gap*: $(round(gapAtual, digits=4))%")
         end
 
-        resultados = solve_all_pricings(V, π, α, vehiclesByStore, tempo, fretes, demandaPeso, demandaVolume, capPeso, capVolume, max_t, t_descarga, rotas, timeWindow)
+        resultados = solve_all_pricings(V, π, α, vehiclesByStore, tempo, fretes, demandaPeso, demandaVolume, capPeso, capVolume, max_t, t_descarga, rotas, timeWindow, pasta_veic)
 
         tolRC = 1e-6
         resultadosNegativos = [resultado for resultado in resultados if resultado !== nothing && resultado.reduced_cost < -tolRC]
 
         if isempty(resultadosNegativos)
+
+            pricingCompleto = all_pricings_complete(V, pasta_veic)
+            if !pricingCompleto
+                println("Nenhum RC negativo encontrado entre as rotas já enumeradas, mas ainda existem veículos com pricing incompleto.")
+                iteracao += 1
+                continue
+            end
+
             LB = LPAtual
 
             println("\n======================================================")
@@ -157,4 +185,4 @@ function main(i, j, max_t, t_descarga, n_routes)
 end
 
 
-main(100, 1, 8, 1, 500)
+main(50, 1, 8, 1, 500)
